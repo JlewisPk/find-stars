@@ -11,6 +11,7 @@ interface IState {
   keywords: any,
   obj: any,
   open: any,
+  shadow: any,
   textValue: any,
   toggle: any,
 }
@@ -27,6 +28,7 @@ class App extends React.Component<{}, IState> {
         url: "",
       },
       open: false,
+      shadow: 1,
       textValue: "",
       toggle: false,
     };
@@ -113,6 +115,8 @@ class App extends React.Component<{}, IState> {
   // private handleClickOpen = () => {
   //   this.setState({ open: true });
   // };
+  public onMouseOver = () => this.setState({ shadow: 3 });
+  public onMouseOut = () => this.setState({ shadow: 1 });
   public render() {
     const {arrayObject, textValue} : any = this.state;
     return (
@@ -134,7 +138,9 @@ class App extends React.Component<{}, IState> {
           arrayObject.map((item:any, index:any) => {
             return (
               <div key={index} style={{padding:10, width:345, }}>
-            <Card onClick={this.popUp.bind(this,item)} style={{width:345, margin: 'auto'}}>
+            <Card onClick={this.popUp.bind(this,item)} style={{width:345, margin: 'auto'}} 
+                onMouseOver={this.onMouseOver}
+                onMouseOut={this.onMouseOut}>
               <CardActionArea>
                 <CardMedia
                   className="media"
