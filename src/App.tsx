@@ -7,7 +7,7 @@ import logo from './logo.svg';
 
 interface IState {
   arrayObject: any[],
-  entered: any,
+  enterPressed: any,
   keywords: any,
   obj: any,
   open: any,
@@ -20,7 +20,7 @@ class App extends React.Component<{}, IState> {
     super(props);
     this.state = {
       arrayObject: [],
-      entered: "",
+      enterPressed: false,
       keywords: "",
       obj: {
         description: "",
@@ -32,46 +32,40 @@ class App extends React.Component<{}, IState> {
       textValue: "",
       toggle: false,
     };
-
-    // this.handleChange = this.handleChange.bind(this);
   }
   public handleChange = (event: any) => {
     this.setState({textValue: event.currentTarget.value});
   }
   public search = async (event: any) => {
     if (event.key === "Enter") {
-      this.setState({entered: "", toggle: true});
+      this.setState({toggle: true, enterPressed: true});
       const {textValue}:any = this.state;
       const commaSeperated:any = textValue.split(/\s+/g).join(',').toString();
       const data = await this.getStarsData(commaSeperated);
-      // console.log(data)
       this.setState({arrayObject: data, toggle:false})
     }
     
   }
   public getStarsData = async (commaSeperated:any) => {
     const url = 'https://images-api.nasa.gov/search?keywords=' + commaSeperated;
-    // console.log(url)
     return await fetch(url, {method: 'GET',})
       .then((res) => {
         const array = res.json()
         return array;
       })
       .then((data) => {
-        
+        // arrayOfData contains those data retrieved from api
         const arrayOfData = data.collection.items;
-        // console.log(arrayOfData)
+        // num of items to retrieve
         const numOfItems = 30;
         const returnArray = [];
         for (let i=0; i <numOfItems; i++) {
           let max = arrayOfData.length;
           let random = Math.floor(Math.random() * (max - 0 + 1)) + 0;
           // check if image returns 404
-          // if 404, get another random
-          // else, push
+          // if 404, get another random(index)
+          // else, push item to returnValue
 
-          // push image that returns 200
-          
           let added = 0
           while (added === 0) {
             if (returnArray.length >=30) {
@@ -85,38 +79,50 @@ class App extends React.Component<{}, IState> {
                   returnArray.push(arrayOfData[random]);
                   // splice the index from arrayOfData
                   arrayOfData.splice(random,1);
+                  // decrement max value so there is no out of index error
                   max = arrayOfData.length;
                 } else {
+                  // retrieved url returns 404. Grab another random(index)
                   random = Math.floor(Math.random() * (max + 1));
                 }
               } else {
+                // arrayOfData[random] got no data (the api itself sometimes return undefined)
+                // Grab another random(index)
                 random = Math.floor(Math.random() * (max + 1));
               }
             } else {
+              // there is no data returned. i.e. search text returned 0 objects from api.
               added = 1;
             }
-            
           }
-
         }
         return returnArray
       })
   }
   public getImg = async (url:any) => {
-    // console.log(url)
     return await fetch(url,{
       method: "GET",
     })
       .then((res) => {
-        console.log('ok')
+        // check if given url actually returns img or not
         return res.ok
       })
   }
-  // private handleClickOpen = () => {
-  //   this.setState({ open: true });
-  // };
+  public handleClose = () => {
+    this.setState({ open: false });
+  };
+  public popUp =(obj:any) => {
+    // get ready object for pop up and toggle pop up
+    const newObj = {
+      description: obj.data[0].description,
+      title: obj.data[0].title,
+      url: obj.links[0].href,
+    }
+    this.setState({obj:newObj, open:true})
+  }
   public onMouseOver = () => this.setState({ shadow: 3 });
   public onMouseOut = () => this.setState({ shadow: 1 });
+
   public render() {
     const {arrayObject, textValue} : any = this.state;
     return (
@@ -124,7 +130,7 @@ class App extends React.Component<{}, IState> {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Find various stars with simple keywords!</h1>
-          <input className="InputField" style={{width:200, height:25, fontSize:20, margin:3, borderWidth:2, borderColor:'#7CCDEC', borderRadius:3, }} value={textValue} onChange={this.handleChange} onKeyPress={this.search} />
+          <input placeholder="e.g. Galaxy" className="InputField" style={{width:200, height:25, fontSize:20, margin:3, borderWidth:2, borderColor:'#7CCDEC', borderRadius:3, }} value={textValue} onChange={this.handleChange} onKeyPress={this.search} />
         </header>
         {this.state.toggle? 
           <div style={{padding:10}}>
@@ -165,7 +171,13 @@ class App extends React.Component<{}, IState> {
           })
         
         :
-        null
+        this.state.enterPressed && !this.state.toggle ?
+          <div style={{padding:15, paddingLeft:20, paddingRight:20, marginTop:15, backgroundColor:'lightgrey', borderRadius:3, }}>
+            <p style={{color:'#4a4a4a'}}>No value retrieved from given keywords D:</p>
+            <p style={{color:'#4a4a4a'}}>Please search again using different keywords!</p>
+          </div>
+            :
+            null
         }
       </div>
       <div>
@@ -187,21 +199,6 @@ class App extends React.Component<{}, IState> {
       </div>
     );
   }
-
-  private handleClose = () => {
-    this.setState({ open: false });
-  };
-  private popUp =(obj:any) => {
-    console.log('popup:', obj)
-    const newObj = {
-      description: obj.data[0].description,
-      title: obj.data[0].title,
-      url: obj.links[0].href,
-    }
-    this.setState({obj:newObj, open:true})
-  }
-  
-  
 }
 
 
