@@ -72,21 +72,26 @@ class App extends React.Component<{}, IState> {
           
           let added = 0
           while (added === 0) {
-            if (arrayOfData[random] !== undefined && arrayOfData[random].links !== undefined) {
-              const usable = this.getImg(arrayOfData[random].links[0].href)
-              // console.log(arrayOfData[random].links[0].href)
-              if (usable) {
-                // push arrayOfData[random] to returnArray
-                returnArray.push(arrayOfData[random]);
-                // splice the index from arrayOfData
-                arrayOfData.splice(random,1);
-                added = 1;
+            if (arrayOfData.length !== 0) {
+              if (arrayOfData[random] !== undefined && arrayOfData[random].links !== undefined) {
+                const usable = this.getImg(arrayOfData[random].links[0].href)
+                // console.log(arrayOfData[random].links[0].href)
+                if (usable) {
+                  // push arrayOfData[random] to returnArray
+                  returnArray.push(arrayOfData[random]);
+                  // splice the index from arrayOfData
+                  arrayOfData.splice(random,1);
+                  added = 1;
+                } else {
+                  random = Math.floor(Math.random() * (max + 1));
+                }
               } else {
                 random = Math.floor(Math.random() * (max + 1));
               }
             } else {
-              random = Math.floor(Math.random() * (max + 1));
+              added = 1;
             }
+            
           }
 
         }
